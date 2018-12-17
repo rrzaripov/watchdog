@@ -91,7 +91,7 @@ def test_create():
     assert event.src_path == p('a')
     assert isinstance(event, FileCreatedEvent)
 
-    if platform.is_windows():
+    if not platform.is_windows():
         event = event_queue.get(timeout=5)[0]
         assert os.path.normpath(event.src_path) == os.path.normpath(p(''))
         assert isinstance(event, DirModifiedEvent)
@@ -106,7 +106,7 @@ def test_delete():
     assert event.src_path == p('a')
     assert isinstance(event, FileDeletedEvent)
 
-    if platform.is_windows():
+    if not platform.is_windows():
         event = event_queue.get(timeout=5)[0]
         assert os.path.normpath(event.src_path) == os.path.normpath(p(''))
         assert isinstance(event, DirModifiedEvent)
@@ -130,18 +130,27 @@ def test_move():
 
     mv(p('dir1', 'a'), p('dir2', 'b'))
 
-    event = event_queue.get(timeout=5)[0]
-    assert event.src_path == p('dir1', 'a')
-    assert event.dest_path == p('dir2', 'b')
-    assert isinstance(event, FileMovedEvent)
+    if not platform.is_windows():
+        event = event_queue.get(timeout=5)[0]
+        assert event.src_path == p('dir1', 'a')
+        assert event.dest_path == p('dir2', 'b')
+        assert isinstance(event, FileMovedEvent)
+    else:
+        event = event_queue.get(timeout=5)[0]
+        assert event.src_path == p('dir1', 'a')
+        assert isinstance(event, FileDeletedEvent)
+        event = event_queue.get(timeout=5)[0]
+        assert event.src_path == p('dir2', 'b')
+        assert isinstance(event, FileCreatedEvent)
 
     event = event_queue.get(timeout=5)[0]
-    assert event.src_path == p('dir1')
+    assert event.src_path in [p('dir1'), p('dir2')]
     assert isinstance(event, DirModifiedEvent)
 
-    event = event_queue.get(timeout=5)[0]
-    assert event.src_path == p('dir2')
-    assert isinstance(event, DirModifiedEvent)
+    if not platform.is_windows():
+        event = event_queue.get(timeout=5)[0]
+        assert event.src_path in [p('dir1'), p('dir2')]
+        assert isinstance(event, FileModifiedEvent)
 
 
 def test_move_to():
@@ -155,17 +164,13 @@ def test_move_to():
     assert isinstance(event, FileCreatedEvent)
     assert event.src_path == p('dir2', 'b')
 
-    event = event_queue.get(timeout=5)[0]
-    assert event.src_path == p('dir2')
-    assert isinstance(event, DirModifiedEvent)
-
-    # Windows additionally emits FileModifiedEvent
-    if platform.is_windows():
+    if not platform.is_windows():
         event = event_queue.get(timeout=5)[0]
         assert isinstance(event, FileModifiedEvent)
         assert event.src_path == p('dir2', 'b')
 
 
+@pytest.mark.skipif(platform.is_windows(), reason="InotifyFullEmitter not supported by Windows")
 def test_move_to_full():
     mkdir(p('dir1'))
     mkdir(p('dir2'))
@@ -175,7 +180,7 @@ def test_move_to_full():
     event = event_queue.get(timeout=5)[0]
     assert isinstance(event, FileMovedEvent)
     assert event.dest_path == p('dir2', 'b')
-    assert event.src_path == None #Should equal none since the path was not watched
+    assert event.src_path is None  # Should equal None since the path was not watched
 
 
 def test_move_from():
@@ -189,12 +194,13 @@ def test_move_from():
     assert isinstance(event, FileDeletedEvent)
     assert event.src_path == p('dir1', 'a')
 
-    if platform.is_windows():
+    if not platform.is_windows():
         event = event_queue.get(timeout=5)[0]
         assert event.src_path == p('dir1')
         assert isinstance(event, DirModifiedEvent)
 
 
+@pytest.mark.skipif(platform.is_windows(), reason="InotifyFullEmitter not supported by Windows")
 def test_move_from_full():
     mkdir(p('dir1'))
     mkdir(p('dir2'))
@@ -218,16 +224,26 @@ def test_separate_consecutive_moves():
     mv(p('b'), p('dir1', 'd'))
 
     event = event_queue.get(timeout=5)[0]
-    assert isinstance(event, FileDeletedEvent)
     assert event.src_path == p('dir1', 'a')
+    assert isinstance(event, FileDeletedEvent)
 
-    assert isinstance(event_queue.get(timeout=5)[0], DirModifiedEvent)
+    if not platform.is_windows():
+        event = event_queue.get(timeout=5)[0]
+        assert event.src_path == p('dir1')
+        assert isinstance(event, DirModifiedEvent)
 
     event = event_queue.get(timeout=5)[0]
-    assert isinstance(event, FileCreatedEvent)
     assert event.src_path == p('dir1', 'd')
+    assert isinstance(event, FileCreatedEvent)
 
-    assert isinstance(event_queue.get(timeout=5)[0], DirModifiedEvent)
+    if not platform.is_windows():
+        event = event_queue.get(timeout=5)[0]
+        assert event.src_path == p('dir1')
+        assert isinstance(event, DirModifiedEvent)
+    else:
+        event = event_queue.get(timeout=5)[0]
+        assert event.src_path == p('dir1', 'd')
+        assert isinstance(event, FileModifiedEvent)
 
 
 @pytest.mark.skipif(platform.is_linux(), reason="bug. inotify will deadlock")
@@ -279,6 +295,9 @@ def test_passing_unicode_should_give_unicode():
     assert isinstance(event.src_path, str_cls)
 
 
+@pytest.mark.skipif(platform.is_windows(),
+                    reason="Windows ReadDirectoryChangesW supports only"
+                           " unicode for paths.")
 def test_passing_bytes_should_give_bytes():
     start_watching(p('').encode())
     touch(p('a'))
