@@ -91,9 +91,10 @@ def test_create():
     assert event.src_path == p('a')
     assert isinstance(event, FileCreatedEvent)
 
-    event = event_queue.get(timeout=5)[0]
-    assert os.path.normpath(event.src_path) == os.path.normpath(p(''))
-    assert isinstance(event, DirModifiedEvent)
+    if platform.is_windows():
+        event = event_queue.get(timeout=5)[0]
+        assert os.path.normpath(event.src_path) == os.path.normpath(p(''))
+        assert isinstance(event, DirModifiedEvent)
 
 
 def test_delete():
@@ -105,9 +106,10 @@ def test_delete():
     assert event.src_path == p('a')
     assert isinstance(event, FileDeletedEvent)
 
-    event = event_queue.get(timeout=5)[0]
-    assert os.path.normpath(event.src_path) == os.path.normpath(p(''))
-    assert isinstance(event, DirModifiedEvent)
+    if platform.is_windows():
+        event = event_queue.get(timeout=5)[0]
+        assert os.path.normpath(event.src_path) == os.path.normpath(p(''))
+        assert isinstance(event, DirModifiedEvent)
 
 
 def test_modify():
@@ -153,6 +155,16 @@ def test_move_to():
     assert isinstance(event, FileCreatedEvent)
     assert event.src_path == p('dir2', 'b')
 
+    event = event_queue.get(timeout=5)[0]
+    assert event.src_path == p('dir2')
+    assert isinstance(event, DirModifiedEvent)
+
+    # Windows additionally emits FileModifiedEvent
+    if platform.is_windows():
+        event = event_queue.get(timeout=5)[0]
+        assert isinstance(event, FileModifiedEvent)
+        assert event.src_path == p('dir2', 'b')
+
 
 def test_move_to_full():
     mkdir(p('dir1'))
@@ -176,6 +188,11 @@ def test_move_from():
     event = event_queue.get(timeout=5)[0]
     assert isinstance(event, FileDeletedEvent)
     assert event.src_path == p('dir1', 'a')
+
+    if platform.is_windows():
+        event = event_queue.get(timeout=5)[0]
+        assert event.src_path == p('dir1')
+        assert isinstance(event, DirModifiedEvent)
 
 
 def test_move_from_full():
@@ -214,6 +231,9 @@ def test_separate_consecutive_moves():
 
 
 @pytest.mark.skipif(platform.is_linux(), reason="bug. inotify will deadlock")
+@pytest.mark.skipif(platform.is_windows(), reason="""WindowsError: [Error 5] 
+access denied when trying delete directory dir1, because them opened by test 
+via start_watching.""")
 def test_delete_self():
     mkdir(p('dir1'))
     start_watching(p('dir1'))
