@@ -43,8 +43,12 @@ if platform.is_linux():
 elif platform.is_darwin():
     pytestmark = pytest.mark.skip("FIXME: It is a matter of bad comparisons between bytes and str.")
     from watchdog.observers.fsevents2 import FSEventsEmitter as Emitter
+elif platform.is_windows():
+    from watchdog.observers.read_directory_changes import (
+        WindowsApiEmitter as Emitter
+    )
 else:
-    pytestmark = pytest.mark.skip("GNU/Linux and macOS only.")
+    pytestmark = pytest.mark.skip("GNU/Linux, macOS and Windows only.")
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -149,6 +153,7 @@ def test_move_to():
     assert isinstance(event, FileCreatedEvent)
     assert event.src_path == p('dir2', 'b')
 
+
 def test_move_to_full():
     mkdir(p('dir1'))
     mkdir(p('dir2'))
@@ -160,6 +165,7 @@ def test_move_to_full():
     assert event.dest_path == p('dir2', 'b')
     assert event.src_path == None #Should equal none since the path was not watched
 
+
 def test_move_from():
     mkdir(p('dir1'))
     mkdir(p('dir2'))
@@ -170,7 +176,8 @@ def test_move_from():
     event = event_queue.get(timeout=5)[0]
     assert isinstance(event, FileDeletedEvent)
     assert event.src_path == p('dir1', 'a')
- 
+
+
 def test_move_from_full():
     mkdir(p('dir1'))
     mkdir(p('dir2'))
@@ -181,6 +188,7 @@ def test_move_from_full():
     assert isinstance(event, FileMovedEvent)
     assert event.src_path == p('dir1', 'a')
     assert event.dest_path == None #Should equal None since path not watched
+
 
 def test_separate_consecutive_moves():
     mkdir(p('dir1'))
@@ -210,7 +218,10 @@ def test_delete_self():
     mkdir(p('dir1'))
     start_watching(p('dir1'))
     rm(p('dir1'), True)
-    event_queue.get(timeout=5)[0]
+
+    event = event_queue.get(timeout=5)[0]
+    assert event.src_path == p('dir1')
+    assert isinstance(event, FileDeletedEvent)
 
 
 def test_fast_subdirectory_creation_deletion():
