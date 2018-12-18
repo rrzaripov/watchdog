@@ -190,6 +190,7 @@ def test_move_from():
     start_watching(p('dir1'))
 
     mv(p('dir1', 'a'), p('dir2', 'b'))
+
     event = event_queue.get(timeout=5)[0]
     assert isinstance(event, FileDeletedEvent)
     assert event.src_path == p('dir1', 'a')
@@ -260,6 +261,8 @@ def test_delete_self():
     assert isinstance(event, FileDeletedEvent)
 
 
+@pytest.mark.skipif(platform.is_windows(),
+                    reason="Windows create another set of events for this test")
 def test_fast_subdirectory_creation_deletion():
     root_dir = p('dir1')
     sub_dir = p('dir1', 'subdir1')
