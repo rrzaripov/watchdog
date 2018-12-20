@@ -127,7 +127,6 @@ def test_move():
     mkdir(p('dir2'))
     touch(p('dir1', 'a'))
     start_watching()
-
     mv(p('dir1', 'a'), p('dir2', 'b'))
 
     if not platform.is_windows():
@@ -150,7 +149,7 @@ def test_move():
     if not platform.is_windows():
         event = event_queue.get(timeout=5)[0]
         assert event.src_path in [p('dir1'), p('dir2')]
-        assert isinstance(event, FileModifiedEvent)
+        assert isinstance(event, DirModifiedEvent)
 
 
 def test_move_to():
@@ -158,16 +157,16 @@ def test_move_to():
     mkdir(p('dir2'))
     touch(p('dir1', 'a'))
     start_watching(p('dir2'))
-
     mv(p('dir1', 'a'), p('dir2', 'b'))
+
     event = event_queue.get(timeout=5)[0]
-    assert isinstance(event, FileCreatedEvent)
     assert event.src_path == p('dir2', 'b')
+    assert isinstance(event, FileCreatedEvent)
 
     if not platform.is_windows():
         event = event_queue.get(timeout=5)[0]
-        assert isinstance(event, FileModifiedEvent)
-        assert event.src_path == p('dir2', 'b')
+        assert event.src_path == p('dir2')
+        assert isinstance(event, DirModifiedEvent)
 
 
 @pytest.mark.skipif(platform.is_windows(), reason="InotifyFullEmitter not supported by Windows")
@@ -177,6 +176,7 @@ def test_move_to_full():
     touch(p('dir1', 'a'))
     start_watching(p('dir2'), use_full_emitter=True)
     mv(p('dir1', 'a'), p('dir2', 'b'))
+
     event = event_queue.get(timeout=5)[0]
     assert isinstance(event, FileMovedEvent)
     assert event.dest_path == p('dir2', 'b')
@@ -188,7 +188,6 @@ def test_move_from():
     mkdir(p('dir2'))
     touch(p('dir1', 'a'))
     start_watching(p('dir1'))
-
     mv(p('dir1', 'a'), p('dir2', 'b'))
 
     event = event_queue.get(timeout=5)[0]
@@ -208,19 +207,18 @@ def test_move_from_full():
     touch(p('dir1', 'a'))
     start_watching(p('dir1'), use_full_emitter=True)
     mv(p('dir1', 'a'), p('dir2', 'b'))
+
     event = event_queue.get(timeout=5)[0]
     assert isinstance(event, FileMovedEvent)
     assert event.src_path == p('dir1', 'a')
-    assert event.dest_path == None #Should equal None since path not watched
+    assert event.dest_path == None  # Should equal None since path not watched
 
 
 def test_separate_consecutive_moves():
     mkdir(p('dir1'))
     touch(p('dir1', 'a'))
     touch(p('b'))
-
     start_watching(p('dir1'))
-
     mv(p('dir1', 'a'), p('c'))
     mv(p('b'), p('dir1', 'd'))
 
@@ -241,11 +239,6 @@ def test_separate_consecutive_moves():
         event = event_queue.get(timeout=5)[0]
         assert event.src_path == p('dir1')
         assert isinstance(event, DirModifiedEvent)
-    # Test on CI failing :( On local work
-    # else:
-    #     event = event_queue.get(timeout=5)[0]
-    #     assert event.src_path == p('dir1', 'd')
-    #     assert isinstance(event, FileModifiedEvent)
 
 
 @pytest.mark.skipif(platform.is_linux(), reason="bug. inotify will deadlock")
@@ -312,9 +305,7 @@ def test_passing_bytes_should_give_bytes():
 
 def test_recursive_on():
     mkdir(p('dir1', 'dir2', 'dir3'), True)
-
     start_watching()
-
     touch(p('dir1', 'dir2', 'dir3', 'a'))
 
     event = event_queue.get(timeout=5)[0]
@@ -329,9 +320,7 @@ def test_recursive_on():
 
 def test_recursive_off():
     mkdir(p('dir1'))
-
     start_watching(recursive=False)
-
     touch(p('dir1', 'a'))
 
     if platform.is_windows():
