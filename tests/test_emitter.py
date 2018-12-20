@@ -314,19 +314,18 @@ def test_recursive_on():
 
     if not platform.is_windows():
         event = event_queue.get(timeout=5)[0]
-        assert event.src_path == p('dir1', 'dir2', 'dir3', 'a')
+        assert event.src_path == p('dir1', 'dir2', 'dir3')
         assert isinstance(event, DirModifiedEvent)
+
+        event = event_queue.get(timeout=5)[0]
+        assert event.src_path == p('dir1', 'dir2', 'dir3', 'a')
+        assert isinstance(event, FileModifiedEvent)
 
 
 def test_recursive_off():
     mkdir(p('dir1'))
     start_watching(recursive=False)
     touch(p('dir1', 'a'))
-
-    if platform.is_windows():
-        event = event_queue.get(timeout=5)[0]
-        assert event.src_path == p('dir1')
-        assert isinstance(event, DirModifiedEvent)
 
     with pytest.raises(Empty):
         event_queue.get(timeout=5)
