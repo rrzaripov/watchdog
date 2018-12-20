@@ -19,7 +19,7 @@ import os
 import time
 import pytest
 import logging
-from tests import Queue
+from tests import Queue, Empty
 from functools import partial
 from .shell import mkdir, touch, mv, rm, mkdtemp
 from watchdog.utils import platform
@@ -61,16 +61,16 @@ def setup_function(function):
     event_queue = Queue()
 
 
-def start_watching(path=None, use_full_emitter=False):
+def start_watching(path=None, use_full_emitter=False, recursive=True):
     path = p('') if path is None else path
     global emitter
     if platform.is_linux() and use_full_emitter:
-        emitter = InotifyFullEmitter(event_queue, ObservedWatch(path, recursive=True))
+        emitter = InotifyFullEmitter(event_queue, ObservedWatch(path, recursive=recursive))
     else:
-        emitter = Emitter(event_queue, ObservedWatch(path, recursive=True))
+        emitter = Emitter(event_queue, ObservedWatch(path, recursive=recursive))
 
     if platform.is_darwin():
-        # FSEvents will report old evens (like create for mkdtemp in test
+        # FSEvents will report old events (like create for mkdtemp in test
         # setup. Waiting for a considerable time seems to 'flush' the events.
         time.sleep(10)
     emitter.start()
@@ -249,7 +249,8 @@ def test_separate_consecutive_moves():
 
 
 @pytest.mark.skipif(platform.is_linux(), reason="bug. inotify will deadlock")
-@pytest.mark.skipif(platform.is_windows(), reason="""WindowsError: [Error 5] 
+@pytest.mark.skipif(platform.is_windows(), reason="""
+WindowsError: [Error 5] 
 access denied when trying delete directory dir1, because them opened by test 
 via start_watching.""")
 def test_delete_self():
@@ -307,3 +308,36 @@ def test_passing_bytes_should_give_bytes():
     touch(p('a'))
     event = event_queue.get(timeout=5)[0]
     assert isinstance(event.src_path, bytes)
+
+
+def test_recursive_on():
+    mkdir(p('dir1', 'dir2', 'dir3'), True)
+
+    start_watching()
+
+    touch(p('dir1', 'dir2', 'dir3', 'a'))
+
+    event = event_queue.get(timeout=5)[0]
+    assert event.src_path == p('dir1', 'dir2', 'dir3', 'a')
+    assert isinstance(event, FileCreatedEvent)
+
+    if not platform.is_windows():
+        event = event_queue.get(timeout=5)[0]
+        assert event.src_path == p('dir1', 'dir2', 'dir3', 'a')
+        assert isinstance(event, DirModifiedEvent)
+
+
+def test_recursive_off():
+    mkdir(p('dir1'))
+
+    start_watching(recursive=False)
+
+    touch(p('dir1', 'a'))
+
+    if platform.is_windows():
+        event = event_queue.get(timeout=5)[0]
+        assert event.src_path == p('dir1')
+        assert isinstance(event, DirModifiedEvent)
+
+    with pytest.raises(Empty):
+        event_queue.get(timeout=5)
