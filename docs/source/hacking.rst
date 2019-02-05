@@ -20,8 +20,7 @@ beginning to hack:
 
 1. Python_
 2. git_
-3. ssh
-4. XCode_ (on Mac OS X)
+3. XCode_ (on Mac OS X)
 
 Setting up the Work Environment
 -------------------------------
@@ -37,7 +36,7 @@ Steps to setting up a clean environment:
 
 2. Clone your fork and setup your environment::
 
-    $ git clone --recursive git@github.com:hackeratti/watchdog.git
+    $ git clone https://github.com/hackeratti/watchdog.git
     $ cd watchdog
     $ python tools/bootstrap.py --distribute
     $ bin/buildout

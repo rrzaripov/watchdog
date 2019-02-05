@@ -4,6 +4,7 @@
 
 Installation
 ============
+
 |project_name| requires Python 2.7 or 3.4+ to work. If you are using a
 Linux/FreeBSD/Mac OS X system, you already have Python installed. However,
 you may wish to upgrade your system to Python 2.7 at least, because this
@@ -13,7 +14,7 @@ problems. See a list of :ref:`installation-dependencies`.
 Installing from PyPI using pip
 ------------------------------
 
-.. parsed-literal::
+.. code:: bash
 
     $ python -m pip install |project_name|
 
@@ -23,7 +24,7 @@ Installing from PyPI using pip
 Installing from source tarballs
 -------------------------------
 
-.. parsed-literal::
+.. code:: bash
 
     $ wget -c http://pypi.python.org/packages/source/w/watchdog/watchdog-|project_version|.tar.gz
     $ tar zxvf |project_name|-|project_version|.tar.gz
@@ -36,7 +37,7 @@ Installing from source tarballs
 Installing from the code repository
 -----------------------------------
 
-::
+.. code:: bash
 
     $ git clone --recursive git://github.com/gorakhargosh/watchdog.git
     $ cd watchdog
@@ -49,6 +50,7 @@ Installing from the code repository
 
 Dependencies
 ------------
+
 |project_name| depends on many libraries to do its job. The following is
 a list of dependencies you need based on the operating system you are
 using.
@@ -76,13 +78,18 @@ using the ``watchmedo`` utility.
 
 Installing Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~
+
 The ``watchmedo`` script depends on PyYAML_ which links with LibYAML_.
-On Mac OS X, you can use homebrew_ to install LibYAML::
+On Mac OS X, you can use homebrew_ to install LibYAML\:
+
+.. code:: bash
 
     brew install libyaml
 
 On Linux, use your favorite package manager to install LibYAML. Here's how you
-do it on Ubuntu::
+do it on Ubuntu\:
+
+.. code:: bash
 
     sudo aptitude install libyaml-dev
 
@@ -91,6 +98,7 @@ On Windows, please install PyYAML_ using the binaries they provide.
 
 Supported Platforms (and Caveats)
 ---------------------------------
+
 |project_name| uses native APIs as much as possible falling back
 to polling the disk periodically to compare directory snapshots
 only when it cannot use an API natively-provided by the underlying
@@ -102,6 +110,8 @@ supported:
 
 
 Linux 2.6+
+~~~~~~~~~~
+
     Linux kernel version 2.6 and later come with an API called inotify_
     that programs can use to monitor file system events.
 
@@ -114,6 +124,8 @@ Linux 2.6+
 
 
 Mac OS X
+~~~~~~~~
+
     The Darwin kernel/OS X API maintains two ways to monitor directories
     for file system events:
 
@@ -133,6 +145,8 @@ Mac OS X
 
 
 _`BSD Unix variants`
+~~~~~~~~~~~~~~~~~~~~
+
     BSD variants come with kqueue_ which programs can use to monitor
     changes to open file descriptors. Because of the way ``kqueue(2)`` works,
     |project_name| needs to open these files and directories in read-only
@@ -154,6 +168,8 @@ _`BSD Unix variants`
 
 
 Windows Vista and later
+~~~~~~~~~~~~~~~~~~~~~~~
+
     The Windows API provides the ReadDirectoryChangesW_. |project_name|
     currently contains implementation for a synchronous approach requiring
     additional API functionality only available in Windows Vista and later.
@@ -172,6 +188,8 @@ Windows Vista and later
               may be reported as a file deleted event.
 
 OS Independent Polling
+~~~~~~~~~~~~~~~~~~~~~~
+
     |project_name| also includes a fallback-implementation that polls
     watched directories for changes by periodically comparing snapshots
     of the directory tree.
