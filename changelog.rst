@@ -6,7 +6,7 @@ API changes
 `Unreleased <https://github.com/gorakhargosh/watchdog/compare/v0.9.0...master>`_ - yyyy-mm-dd
 ~~~~~
 
-- Dropped support for Python 2.6, 3.2 and 3.3.
+- Dropped support for Python 2.6, 3.2, 3.3 and 3.4.
   If you are still running one of these obsolete Python version, you have to keep using Watchdog <= 0.10.0.
 - The ``watchmedo`` utility is no more installed by default but via the extra ``watchdog[watchmedo]``.
 - Fixed thread leaks in tests.

@@ -8,7 +8,7 @@ Watchdog
 
 Python API and shell utilities to monitor file system events.
 
-Works on Python 2.7 and 3.4+. If you want to use an old version of Python, you should stick with watchdog < 0.10.0.
+Works on Python 2.7 and 3.5+. If you want to use an old version of Python, you should stick with watchdog < 0.10.0.
 
 Example API Usage
 -----------------
@@ -219,7 +219,7 @@ this feature.
 
 Dependencies
 ------------
-1. Python 2.7, 3.4 or above.
+1. Python 2.7, 3.5 or above.
 2. pathtools_
 3. XCode_ (only on Mac OS X)
 4. PyYAML_ (only for ``watchmedo`` script)
