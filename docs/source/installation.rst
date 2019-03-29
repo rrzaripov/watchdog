@@ -4,7 +4,7 @@
 
 Installation
 ============
-|project_name| requires Python 2.7 or 3.4+ to work. If you are using a
+|project_name| requires Python 2.7 or 3.5+ to work. If you are using a
 Linux/FreeBSD/Mac OS X system, you already have Python installed. However,
 you may wish to upgrade your system to Python 2.7 at least, because this
 version comes with updates that can reduce compatibility
