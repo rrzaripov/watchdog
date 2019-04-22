@@ -20,7 +20,7 @@ import pytest
 from watchdog.utils import platform
 
 if not platform.is_linux():
-    pytest.skip("GNU/Linux only.", allow_module_level=True)
+    pytest.skip("GNU/Linux only.")
 
 import os
 import random
