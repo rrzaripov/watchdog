@@ -19,8 +19,6 @@ from __future__ import unicode_literals
 import pytest
 from watchdog.utils import platform
 
-pytestmark = pytest.mark.skipif(not platform.is_linux(), "GNU/Linux only.")
-
 import os
 import random
 

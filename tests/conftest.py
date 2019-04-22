@@ -4,6 +4,14 @@ import sys
 import threading
 import pytest
 from . import shell
+from watchdog.utils import platform
+
+collect_ignore = []
+if not platform.is_linux():
+    collect_ignore.append('test_inotify_c.py', 'test_inotify_buffer.py')
+
+if not platform.is_darwin():
+    collect_ignore.append('test_fsevents.py')
 
 
 @pytest.fixture()

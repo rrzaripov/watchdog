@@ -3,8 +3,6 @@
 import pytest
 from watchdog.utils import platform
 
-pytestmark = pytest.mark.skipif(not platform.is_darwin(), "macOS only.")
-
 import logging
 import os
 import time
