@@ -38,7 +38,8 @@ environment:
       python_path: c:\python37-x64
 
 install:
-  - SET "PATH=%python_path%;%python_path%\Scripts;%PATH%"
+  - SET PATH=%python_path%;%python_path%\Scripts;%PATH%
+  - echo %PATH%
   - python -m pip install --upgrade pip
   - pip install tox
 
