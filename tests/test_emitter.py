@@ -238,11 +238,6 @@ def test_separate_consecutive_moves():
         assert isinstance(event, DirModifiedEvent)
 
 
-@pytest.mark.skipif(platform.is_linux(), reason="bug. inotify will deadlock")
-@pytest.mark.skipif(platform.is_windows(), reason="""
-WindowsError: [Error 5]
-access denied when trying delete directory dir1, because them opened by test
-via start_watching.""")
 def test_delete_self():
     mkdir(p('dir1'))
     start_watching(p('dir1'))
