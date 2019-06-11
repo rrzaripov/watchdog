@@ -239,7 +239,6 @@ def test_separate_consecutive_moves():
 
 
 def test_delete_self():
-    with pytest.norise
     mkdir(p('dir1'))
     start_watching(p('dir1'))
     rm(p('dir1'), True)
