@@ -39,10 +39,8 @@ environment:
 
 install:
   - SET PATH=%python_path%;%python_path%\Scripts;%PATH%
-  - echo %PATH%
-  - python -m pip install --upgrade pip
   - pip install tox
-  - pip list
+  - %APPVEYOR_BUILD_FOLDER%.\tox\%tox_env%\bin\pip install --upgrade pip
 
 test_script:
-  tox -r -e %tox_env%
+  tox -e %tox_env%
