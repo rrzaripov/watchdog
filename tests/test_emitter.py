@@ -41,7 +41,7 @@ if platform.is_linux():
         InotifyFullEmitter,
     )
 elif platform.is_darwin():
-    #pytestmark = pytest.mark.skip("FIXME: issue #546.")
+    # pytestmark = pytest.mark.skip("FIXME: issue #546.")
     from watchdog.observers.fsevents2 import FSEventsEmitter as Emitter
 elif platform.is_windows():
     from watchdog.observers.read_directory_changes import (
