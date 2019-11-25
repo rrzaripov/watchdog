@@ -120,3 +120,10 @@ def msize(path):
     with open(path, 'w') as w:
         w.write('0')
     os.utime(path, (0, 0))
+
+
+def cp(src_path, dst_path, recursive=True):
+    if recursive:
+        shutil.copytree(src_path, dst_path)
+    else:
+        shutil.copy(src_path, dst_path)

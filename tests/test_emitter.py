@@ -21,7 +21,7 @@ import pytest
 import logging
 from functools import partial
 from . import Queue, Empty
-from .shell import mkdir, touch, mv, rm
+from .shell import mkdir, touch, mv, rm, cp
 from watchdog.utils import platform
 from watchdog.utils.unicode_paths import str_cls
 from watchdog.events import (
@@ -333,12 +333,19 @@ def test_recursive_on():
 
 @pytest.mark.flaky(max_runs=5, min_passes=1, rerun_filter=rerun_filter)
 def test_recursive_off():
-    mkdir(p('dir1'))
-    start_watching(recursive=False)
-    touch(p('dir1', 'a'))
+    mkdir(p('dir1', 'dir2', 'dir3'), True)
+    touch(p('dir1', 'dir2', 'dir3', 'a3'))
 
+    start_watching(recursive=False)
+
+    touch(p('dir1', 'dir2', 'a1'))
     with pytest.raises(Empty):
         event_queue.get(timeout=5)
+
+    cp(p('dir1', 'dir2', 'dir3'), p('dir4'))
+    event = event_queue.get(timeout=5)[0]
+    assert event.src_path == p('dir4')
+    assert isinstance(event, DirCreatedEvent)
 
 
 @pytest.mark.skipif(platform.is_windows(),
